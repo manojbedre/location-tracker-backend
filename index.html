@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Share Your Location</title>
+</head>
+<body>
+  <h1>Please Share Your Location</h1>
+  <button onclick="getLocation()">Share Location</button>
+  <p id="status"></p>
+  <p id="location-data"></p>
+
+  <script>
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(sendLocation, showError);
+      } else {
+        document.getElementById("status").innerHTML = "Geolocation is not supported by this browser.";
+      }
+    }
+
+    function sendLocation(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      document.getElementById("status").innerHTML = "Location shared successfully!";
+
+      // Send the location to your backend server
+      fetch('http://localhost:5000/save-location', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ latitude, longitude }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Server response:', data);
+        // Display the location data on the frontend
+        document.getElementById("location-data").innerHTML = `
+          Latitude: ${data.latitude}, Longitude: ${data.longitude}
+        `;
+      })
+      .catch(error => {
+        console.error('Error sending location:', error);
+      });
+    }
+
+    function showError(error) {
+      document.getElementById("status").innerHTML = "Error sharing location: " + error.message;
+    }
+  </script>
+</body>
+</html>
